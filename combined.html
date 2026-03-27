@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=430, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Flight Results — Combined</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: #EEEEEE;
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Intro screen ── */
+  .intro-screen {
+    padding: 24px 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .search-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .search-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .search-trip-type {
+    display: inline-block;
+    background: #F4F4F4;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-weight: 500;
+    font-size: 12px;
+    color: #4D4D4D;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .search-routes {
+    padding: 0;
+  }
+  .search-route {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #F5F5F5;
+  }
+  .search-route:last-child {
+    border-bottom: none;
+  }
+  .search-route-number {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #F4F4F4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 11px;
+    color: #878787;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .search-route-cities {
+    flex: 1;
+    min-width: 0;
+  }
+  .search-route-codes {
+    font-weight: 800;
+    font-size: 15px;
+    color: #393939;
+    letter-spacing: -0.2px;
+    line-height: 20px;
+  }
+  .search-route-codes .arrow {
+    font-weight: 400;
+    color: #878787;
+    margin: 0 6px;
+  }
+  .search-route-names {
+    font-weight: 400;
+    font-size: 12px;
+    color: #878787;
+    line-height: 16px;
+    margin-top: 2px;
+  }
+  .search-route-date {
+    font-weight: 500;
+    font-size: 13px;
+    color: #4D4D4D;
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+  .search-passengers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #F0F0F0;
+  }
+  .search-pax-icon {
+    width: 18px;
+    height: 18px;
+    color: #878787;
+  }
+  .search-pax-text {
+    font-weight: 400;
+    font-size: 13px;
+    color: #4D4D4D;
+  }
+  .btn-search {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 16px 16px 20px;
+    height: 48px;
+    padding: 0 16px;
+    background: #374151;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-search:hover { background: #1F2937; }
+  .btn-search:active { background: #111827; transform: scale(0.99); }
+
+  /* ── Page title ── */
+  .page-title {
+    font-weight: 500;
+    font-size: 20px;
+    color: #000;
+    padding: 16px 16px 0;
+    line-height: 28px;
+  }
+
+  /* ── Cards container ── */
+  .cards-container {
+    padding: 12px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ── Flight card ── */
+  .flight-card {
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .flight-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+  }
+  .flight-card:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  /* ── Mobile flight segment ── */
+  .flight-segment {
+    padding: 16px 16px 0;
+  }
+  .flight-segment + .flight-segment {
+    border-top: 1px dashed #646464;
+  }
+
+  .segment-label {
+    font-weight: 500;
+    font-size: 11px;
+    color: #878787;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .airline-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 24px;
+    margin-bottom: 16px;
+  }
+  .airline-icon-text {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .airline-name {
+    flex: 1;
+    font-weight: 400;
+    font-size: 14px;
+    color: #4D4D4D;
+    line-height: 20px;
+  }
+  .baggage-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .baggage-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .baggage-weight {
+    font-weight: 500;
+    font-size: 12px;
+    color: #878787;
+    white-space: nowrap;
+  }
+
+  .flight-date {
+    font-weight: 500;
+    font-size: 12px;
+    color: #333;
+    line-height: 18px;
+    margin-bottom: 4px;
+  }
+
+  .time-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .time-details {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .time-value {
+    font-weight: 800;
+    font-size: 16px;
+    color: #393939;
+    letter-spacing: -0.32px;
+    line-height: 16px;
+  }
+  .airport-code {
+    font-weight: 400;
+    font-size: 16px;
+    color: #4D4D4D;
+    line-height: 16px;
+    position: relative;
+    cursor: default;
+  }
+  .time-dash {
+    font-weight: 400;
+    font-size: 16px;
+    color: #333;
+    line-height: 22px;
+  }
+  .duration {
+    font-weight: 500;
+    font-size: 16px;
+    color: #4D4D4D;
+    line-height: 22px;
+    white-space: nowrap;
+  }
+
+  .stops-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 24px;
+    margin-bottom: 16px;
+  }
+  .stop-pill {
+    background: #F4F4F4;
+    border-radius: 7px;
+    padding: 0 8px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    font-size: 12px;
+    color: #000;
+    letter-spacing: 0.12px;
+    line-height: 12px;
+    white-space: nowrap;
+  }
+  .stop-codes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .stop-code-tip {
+    font-weight: 500;
+    font-size: 14px;
+    color: #878787;
+    cursor: default;
+    position: relative;
+  }
+  .stop-code-tip .tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 16px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: max-content;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .stop-code-tip .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+  }
+  .stop-code-tip:hover .tooltip { display: block; }
+
+  .airport-code .tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 16px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .airport-code .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+  }
+  .airport-code:hover .tooltip { display: block; }
+
+  .plus-day {
+    font-weight: 500;
+    font-size: 10px;
+    color: #D71921;
+    margin-left: 1px;
+    vertical-align: super;
+    line-height: 0;
+  }
+
+  /* ── Card footer ── */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 16px;
+    border-top: 1px solid #F5F5F5;
+  }
+  .price-wrapper {
+    flex: 1;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .price-value {
+    font-weight: 500;
+    font-size: 20px;
+    color: #000;
+    line-height: 20px;
+  }
+  .price-subtitle {
+    font-weight: 400;
+    font-size: 10px;
+    color: #999;
+    letter-spacing: 0.2px;
+    line-height: 12px;
+    white-space: nowrap;
+  }
+  .btn-view-details {
+    background: #374151;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    height: 48px;
+    padding: 0 16px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 48px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-view-details:hover { background: #1F2937; }
+  .btn-view-details:active { background: #111827; transform: scale(0.98); }
+
+  /* ── Task complete ── */
+  .task-complete {
+    padding: 16px;
+  }
+  .complete-heading {
+    font-weight: 500;
+    font-size: 20px;
+    color: #000;
+    margin-bottom: 16px;
+    line-height: 28px;
+  }
+  .complete-card {
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .complete-segment {
+    padding: 16px;
+    border-bottom: 1px dashed #646464;
+  }
+  .complete-segment:last-child { border-bottom: none; }
+  .complete-label {
+    font-weight: 500;
+    font-size: 11px;
+    color: #4B5563;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .complete-airline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    font-size: 14px;
+    color: #4D4D4D;
+    margin-bottom: 4px;
+  }
+  .complete-route {
+    font-weight: 800;
+    font-size: 16px;
+    color: #393939;
+    letter-spacing: -0.32px;
+  }
+  .complete-meta {
+    font-weight: 400;
+    font-size: 13px;
+    color: #878787;
+    margin-top: 4px;
+  }
+  .complete-price-bar {
+    background: #fff;
+    border-radius: 4px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .complete-total-label {
+    font-weight: 400;
+    font-size: 14px;
+    color: #4D4D4D;
+  }
+  .complete-total-price {
+    font-weight: 500;
+    font-size: 24px;
+    color: #000;
+  }
+  .btn-book {
+    background: #374151;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    height: 48px;
+    padding: 0 24px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-book:hover { background: #1F2937; }
+  .btn-book:active { background: #111827; transform: scale(0.98); }
+  .btn-book-done { background: #1D4ED8; cursor: default; }
+  .btn-book-done:hover { background: #1D4ED8; }
+  .btn-book-done:active { background: #1D4ED8; transform: none; }
+
+  .btn-back {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    color: #4D4D4D;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 12px;
+    transition: opacity 0.15s;
+  }
+  .btn-back:hover { opacity: 0.6; }
+
+  .btn-link {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    color: #878787;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 4px 0;
+    transition: opacity 0.15s;
+  }
+  .btn-link:hover { opacity: 0.6; }
+
+  .btn-start-over {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid #878787;
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-start-over:hover { background: #f4f4f4; }
+  .btn-start-over:active { background: #EEEEEE; }
+
+  /* ── Task done ── */
+  .task-done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 16px;
+  }
+  .task-done-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #374151;
+    color: #fff;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .task-done-text {
+    font-weight: 500;
+    font-size: 20px;
+    color: #000;
+  }
+
+  /* ── Animations ── */
+  .fade-in { animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ── Intro Screen ── -->
+<div id="intro-screen" class="intro-screen">
+  <div class="search-card">
+    <div class="search-header">
+      <span class="search-trip-type">Multi-city</span>
+    </div>
+    <div class="search-routes">
+      <div class="search-route">
+        <div class="search-route-number">1</div>
+        <div class="search-route-cities">
+          <div class="search-route-codes">MEL<span class="arrow">→</span>LHR</div>
+          <div class="search-route-names">Melbourne to London</div>
+        </div>
+        <div class="search-route-date">Mon, 15 Sep</div>
+      </div>
+      <div class="search-route">
+        <div class="search-route-number">2</div>
+        <div class="search-route-cities">
+          <div class="search-route-codes">LHR<span class="arrow">→</span>NRT</div>
+          <div class="search-route-names">London to Tokyo</div>
+        </div>
+        <div class="search-route-date">Mon, 22 Sep</div>
+      </div>
+      <div class="search-route">
+        <div class="search-route-number">3</div>
+        <div class="search-route-cities">
+          <div class="search-route-codes">NRT<span class="arrow">→</span>MEL</div>
+          <div class="search-route-names">Tokyo to Melbourne</div>
+        </div>
+        <div class="search-route-date">Mon, 29 Sep</div>
+      </div>
+    </div>
+    <div class="search-passengers">
+      <svg class="search-pax-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="7" r="3.5" stroke="#878787" stroke-width="1.2"/>
+        <path d="M3.5 17.5c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="#878787" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span class="search-pax-text">1 Adult</span>
+    </div>
+  </div>
+  <button class="btn-search" onclick="startSearch()">Search flights</button>
+</div>
+
+<!-- ── Results ── -->
+<div id="results" style="display:none"></div>
+
+<script>
+// ── Airline colors (all use colored circle initials) ──
+const AIRLINE_COLORS = {
+  'Singapore Airlines': '#F0AB00',
+  'Emirates': '#D71921',
+  'Qatar Airways': '#5C0632',
+  'Qantas': '#E0001B',
+  'Thai Airways': '#4B2E83',
+  'Malaysia Airlines': '#1C3E6E',
+  'Cathay Pacific': '#006564',
+  'Etihad Airways': '#BD8B13',
+  'Japan Airlines': '#C8102E',
+  'Vietnam Airlines': '#006885',
+  'Korean Air': '#00256C',
+  'China Southern': '#008FD5',
+  'Sri Lankan Airlines': '#1A3F6F'
+};
+
+const AIRPORT_NAMES = {
+  MEL: 'Melbourne Airport, Australia',
+  LHR: 'Heathrow Airport, United Kingdom',
+  LGW: 'Gatwick Airport, United Kingdom',
+  NRT: 'Narita Airport, Japan',
+  HND: 'Haneda Airport, Japan',
+  SIN: 'Changi Airport, Singapore',
+  DXB: 'Dubai International, UAE',
+  DOH: 'Hamad Airport, Qatar',
+  BKK: 'Suvarnabhumi Airport, Thailand',
+  KUL: 'Kuala Lumpur Airport, Malaysia',
+  HKG: 'Hong Kong Airport, Hong Kong',
+  AUH: 'Abu Dhabi Airport, UAE',
+  SGN: 'Tan Son Nhat Airport, Vietnam',
+  ICN: 'Incheon Airport, South Korea',
+  CAN: 'Baiyun Airport, China',
+  CMB: 'Bandaranaike Airport, Sri Lanka'
+};
+
+const CITY_NAMES = {
+  SIN: 'Singapore', DXB: 'Dubai', DOH: 'Doha', BKK: 'Bangkok',
+  KUL: 'Kuala Lumpur', HKG: 'Hong Kong', AUH: 'Abu Dhabi',
+  SGN: 'Ho Chi Minh City', ICN: 'Seoul', CAN: 'Guangzhou', CMB: 'Colombo',
+  NRT: 'Tokyo', HND: 'Tokyo', MEL: 'Melbourne', LHR: 'London', LGW: 'London'
+};
+
+const BAGGAGE_SVG = `<svg class="baggage-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+  <path d="M7.5 6V4.5C7.5 3.67 8.17 3 9 3h2c.83 0 1.5.67 1.5 1.5V6" fill="none" stroke="#878787" stroke-width="1.3"/>
+  <rect x="4" y="6" width="12" height="12" rx="1.5" fill="#878787"/>
+  <line x1="4.5" y1="10.5" x2="15.5" y2="10.5" stroke="#fff" stroke-width="1"/>
+</svg>`;
+
+// ── Flight Data ──
+const leg1Flights = [
+  { id: 'l1-0', airline: 'Singapore Airlines', dep: '10:05am', arr: '12:50am', depCode: 'MEL', arrCode: 'LHR', duration: '23h 45m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '2h 45m', date: 'Mon, 15 Sep', price: 2450, plusDay: 1, alternates: [] },
+  { id: 'l1-1', airline: 'Emirates', dep: '9:30pm', arr: '11:45am', depCode: 'MEL', arrCode: 'LHR', duration: '23h 15m', stops: '1 Stop', stopCode: 'DXB', stopDuration: '2h 15m', date: 'Mon, 15 Sep', price: 2680, plusDay: 1,
+    alternates: [
+      { dep: '6:10am', arr: '8:15pm', duration: '23h 05m', stopDuration: '2h 05m', plusDay: 0 },
+      { dep: '2:40pm', arr: '4:30am', duration: '22h 50m', stopDuration: '1h 55m', plusDay: 1 }
+    ]},
+  { id: 'l1-2', airline: 'Qatar Airways', dep: '8:45pm', arr: '11:35am', depCode: 'MEL', arrCode: 'LGW', duration: '23h 50m', stops: '1 Stop', stopCode: 'DOH', stopDuration: '2h 50m', date: 'Mon, 15 Sep', price: 2520, plusDay: 1, alternates: [] },
+  { id: 'l1-3', airline: 'Qantas', dep: '11:30am', arr: '2:50am', depCode: 'MEL', arrCode: 'LHR', duration: '24h 20m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 20m', date: 'Mon, 15 Sep', price: 2980, plusDay: 1, alternates: [] },
+  { id: 'l1-4', airline: 'Thai Airways', dep: '8:55am', arr: '1:05am', depCode: 'MEL', arrCode: 'LHR', duration: '25h 10m', stops: '1 Stop', stopCode: 'BKK', stopDuration: '4h 10m', date: 'Mon, 15 Sep', price: 2350, plusDay: 1, alternates: [] },
+  { id: 'l1-5', airline: 'Malaysia Airlines', dep: '11:50pm', arr: '2:55pm', depCode: 'MEL', arrCode: 'LGW', duration: '24h 05m', stops: '1 Stop', stopCode: 'KUL', stopDuration: '3h 05m', date: 'Mon, 15 Sep', price: 2280, plusDay: 1,
+    alternates: [
+      { dep: '8:20am', arr: '11:25pm', duration: '24h 05m', stopDuration: '3h 10m', plusDay: 0 },
+      { dep: '4:15pm', arr: '7:20am', duration: '24h 05m', stopDuration: '3h 00m', plusDay: 1 }
+    ]},
+  { id: 'l1-6', airline: 'Cathay Pacific', dep: '12:45pm', arr: '4:00am', depCode: 'MEL', arrCode: 'LHR', duration: '24h 15m', stops: '1 Stop', stopCode: 'HKG', stopDuration: '2h 45m', date: 'Mon, 15 Sep', price: 2590, plusDay: 1,
+    alternates: [
+      { dep: '5:30pm', arr: '8:50am', duration: '24h 20m', stopDuration: '2h 55m', plusDay: 1 }
+    ]},
+  { id: 'l1-7', airline: 'Etihad Airways', dep: '10:15pm', arr: '1:40pm', depCode: 'MEL', arrCode: 'LHR', duration: '24h 25m', stops: '1 Stop', stopCode: 'AUH', stopDuration: '3h 10m', date: 'Mon, 15 Sep', price: 2780, plusDay: 1, alternates: [] },
+  { id: 'l1-8', airline: 'Japan Airlines', dep: '10:00am', arr: '3:35am', depCode: 'MEL', arrCode: 'LHR', duration: '26h 35m', stops: '1 Stop', stopCode: 'NRT', stopDuration: '3h 45m', date: 'Mon, 15 Sep', price: 3150, plusDay: 1, alternates: [] },
+  { id: 'l1-9', airline: 'Vietnam Airlines', dep: '9:40am', arr: '12:45am', depCode: 'MEL', arrCode: 'LHR', duration: '24h 05m', stops: '1 Stop', stopCode: 'SGN', stopDuration: '3h 20m', date: 'Mon, 15 Sep', price: 2200, plusDay: 1,
+    alternates: [
+      { dep: '11:50pm', arr: '2:50pm', duration: '24h 00m', stopDuration: '3h 10m', plusDay: 1 }
+    ]},
+  { id: 'l1-10', airline: 'Korean Air', dep: '6:30pm', arr: '10:20am', depCode: 'MEL', arrCode: 'LHR', duration: '24h 50m', stops: '1 Stop', stopCode: 'ICN', stopDuration: '2h 50m', date: 'Mon, 15 Sep', price: 2390, plusDay: 1, alternates: [] },
+  { id: 'l1-11', airline: 'China Southern', dep: '11:20am', arr: '4:15am', depCode: 'MEL', arrCode: 'LGW', duration: '25h 55m', stops: '1 Stop', stopCode: 'CAN', stopDuration: '4h 15m', date: 'Mon, 15 Sep', price: 2250, plusDay: 1, alternates: [] },
+  { id: 'l1-12', airline: 'Sri Lankan Airlines', dep: '4:20pm', arr: '8:35am', depCode: 'MEL', arrCode: 'LHR', duration: '25h 15m', stops: '1 Stop', stopCode: 'CMB', stopDuration: '3h 30m', date: 'Mon, 15 Sep', price: 2310, plusDay: 1, alternates: [] },
+  { id: 'l1-13', airline: 'Singapore Airlines', dep: '5:15pm', arr: '8:40am', depCode: 'MEL', arrCode: 'LHR', duration: '24h 25m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 25m', date: 'Mon, 15 Sep', price: 2320, plusDay: 1, alternates: [] },
+  { id: 'l1-14', airline: 'Emirates', dep: '1:20pm', arr: '3:45am', depCode: 'MEL', arrCode: 'LHR', duration: '23h 25m', stops: '1 Stop', stopCode: 'DXB', stopDuration: '2h 25m', date: 'Mon, 15 Sep', price: 2550, plusDay: 1, alternates: [] },
+  { id: 'l1-15', airline: 'Qatar Airways', dep: '2:30pm', arr: '5:45am', depCode: 'MEL', arrCode: 'LHR', duration: '24h 15m', stops: '1 Stop', stopCode: 'DOH', stopDuration: '3h 15m', date: 'Mon, 15 Sep', price: 2410, plusDay: 1, alternates: [] },
+  { id: 'l1-16', airline: 'Malaysia Airlines', dep: '3:05pm', arr: '6:10am', depCode: 'MEL', arrCode: 'LGW', duration: '24h 05m', stops: '1 Stop', stopCode: 'KUL', stopDuration: '3h 00m', date: 'Mon, 15 Sep', price: 2480, plusDay: 1, alternates: [] },
+  { id: 'l1-17', airline: 'China Southern', dep: '8:15am', arr: '2:50pm', depCode: 'MEL', arrCode: 'LGW', duration: '31h 35m', stops: '2 Stops', stopCode: 'CAN', stopDuration: '4h 15m', stopCode2: 'DXB', stopDuration2: '3h 30m', date: 'Mon, 15 Sep', price: 2020, plusDay: 1, alternates: [] },
+  { id: 'l1-18', airline: 'Vietnam Airlines', dep: '7:30am', arr: '12:20pm', depCode: 'MEL', arrCode: 'LHR', duration: '29h 50m', stops: '2 Stops', stopCode: 'SGN', stopDuration: '3h 20m', stopCode2: 'BKK', stopDuration2: '2h 45m', date: 'Mon, 15 Sep', price: 2050, plusDay: 1, alternates: [] },
+  { id: 'l1-19', airline: 'Singapore Airlines', dep: '5:15pm', arr: '10:25am', depCode: 'MEL', arrCode: 'LHR', duration: '26h 10m', stops: '1 Stop', stopCode: 'BKK', stopDuration: '4h 45m', date: 'Mon, 15 Sep', price: 2260, plusDay: 1, alternates: [] },
+  { id: 'l1-20', airline: 'Qatar Airways', dep: '8:45pm', arr: '1:25pm', depCode: 'MEL', arrCode: 'LGW', duration: '25h 40m', stops: '1 Stop', stopCode: 'BKK', stopDuration: '4h 30m', date: 'Mon, 15 Sep', price: 2525, plusDay: 1, alternates: [] }
+];
+
+const leg2Flights = [
+  { id: 'l2-0', airline: 'Qatar Airways', dep: '8:45am', arr: '10:30am', depCode: 'LHR', arrCode: 'NRT', duration: '16h 45m', stops: '1 Stop', stopCode: 'DOH', stopDuration: '2h 30m', date: 'Mon, 22 Sep', increment: 0, plusDay: 1, alternates: [] },
+  { id: 'l2-1', airline: 'Emirates', dep: '2:15pm', arr: '11:50am', depCode: 'LHR', arrCode: 'NRT', duration: '14h 35m', stops: '1 Stop', stopCode: 'DXB', stopDuration: '2h 15m', date: 'Mon, 22 Sep', increment: 35, plusDay: 1,
+    alternates: [
+      { dep: '9:30pm', arr: '6:05pm', duration: '13h 35m', stopDuration: '2h 05m', plusDay: 1 }
+    ]},
+  { id: 'l2-2', airline: 'Vietnam Airlines', dep: '10:20am', arr: '7:45am', depCode: 'LHR', arrCode: 'HND', duration: '14h 25m', stops: '1 Stop', stopCode: 'SGN', stopDuration: '2h 45m', date: 'Mon, 22 Sep', increment: 45, plusDay: 1, alternates: [] },
+  { id: 'l2-3', airline: 'Singapore Airlines', dep: '9:30pm', arr: '8:15pm', depCode: 'LHR', arrCode: 'HND', duration: '15h 45m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 15m', date: 'Mon, 22 Sep', increment: 55, plusDay: 1, alternates: [] },
+  { id: 'l2-4', airline: 'Thai Airways', dep: '12:30pm', arr: '9:55am', depCode: 'LHR', arrCode: 'NRT', duration: '14h 25m', stops: '1 Stop', stopCode: 'BKK', stopDuration: '3h 00m', date: 'Mon, 22 Sep', increment: 75, plusDay: 1, alternates: [] },
+  { id: 'l2-5', airline: 'Etihad Airways', dep: '8:55pm', arr: '6:40pm', depCode: 'LHR', arrCode: 'HND', duration: '14h 45m', stops: '1 Stop', stopCode: 'AUH', stopDuration: '2h 50m', date: 'Mon, 22 Sep', increment: 90, plusDay: 1,
+    alternates: [
+      { dep: '2:10pm', arr: '11:55am', duration: '14h 45m', stopDuration: '2h 40m', plusDay: 1 }
+    ]},
+  { id: 'l2-6', airline: 'Malaysia Airlines', dep: '11:15am', arr: '9:30am', depCode: 'LGW', arrCode: 'NRT', duration: '15h 15m', stops: '1 Stop', stopCode: 'KUL', stopDuration: '3h 10m', date: 'Mon, 22 Sep', increment: 110, plusDay: 1, alternates: [] },
+  { id: 'l2-7', airline: 'Cathay Pacific', dep: '10:30am', arr: '5:50am', depCode: 'LHR', arrCode: 'HND', duration: '12h 20m', stops: '1 Stop', stopCode: 'HKG', stopDuration: '2h 30m', date: 'Mon, 22 Sep', increment: 125, plusDay: 1,
+    alternates: [
+      { dep: '9:15pm', arr: '4:35pm', duration: '12h 20m', stopDuration: '2h 25m', plusDay: 1 }
+    ]},
+  { id: 'l2-8', airline: 'Korean Air', dep: '6:45pm', arr: '3:50pm', depCode: 'LHR', arrCode: 'NRT', duration: '14h 05m', stops: '1 Stop', stopCode: 'ICN', stopDuration: '2h 40m', date: 'Mon, 22 Sep', increment: 150, plusDay: 1, alternates: [] },
+  { id: 'l2-9', airline: 'China Southern', dep: '9:20am', arr: '6:35am', depCode: 'LGW', arrCode: 'NRT', duration: '14h 15m', stops: '1 Stop', stopCode: 'CAN', stopDuration: '3h 30m', date: 'Mon, 22 Sep', increment: 165, plusDay: 1, alternates: [] },
+  { id: 'l2-10', airline: 'Singapore Airlines', dep: '11:15am', arr: '9:50am', depCode: 'LHR', arrCode: 'NRT', duration: '15h 35m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 05m', date: 'Mon, 22 Sep', increment: 25, plusDay: 1, alternates: [] },
+  { id: 'l2-11', airline: 'Emirates', dep: '7:45pm', arr: '4:20pm', depCode: 'LHR', arrCode: 'NRT', duration: '13h 35m', stops: '1 Stop', stopCode: 'DXB', stopDuration: '2h 05m', date: 'Mon, 22 Sep', increment: 70, plusDay: 1, alternates: [] },
+  { id: 'l2-12', airline: 'Singapore Airlines', dep: '3:45pm', arr: '1:10pm', depCode: 'LHR', arrCode: 'HND', duration: '14h 25m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '2h 55m', date: 'Mon, 22 Sep', increment: 105, plusDay: 1, alternates: [] },
+  { id: 'l2-13', airline: 'Qatar Airways', dep: '5:30pm', arr: '8:15am', depCode: 'LHR', arrCode: 'NRT', duration: '17h 45m', stops: '1 Stop', stopCode: 'DOH', stopDuration: '3h 45m', date: 'Mon, 22 Sep', increment: 140, plusDay: 1, alternates: [] },
+  { id: 'l2-14', airline: 'Malaysia Airlines', dep: '7:30am', arr: '10:00am', depCode: 'LGW', arrCode: 'NRT', duration: '21h 30m', stops: '2 Stops', stopCode: 'KUL', stopDuration: '3h 10m', stopCode2: 'SIN', stopDuration2: '2h 35m', date: 'Mon, 22 Sep', increment: 5, plusDay: 1, alternates: [] },
+  { id: 'l2-15', airline: 'China Southern', dep: '6:45am', arr: '8:30am', depCode: 'LGW', arrCode: 'NRT', duration: '22h 45m', stops: '2 Stops', stopCode: 'CAN', stopDuration: '3h 30m', stopCode2: 'HKG', stopDuration2: '2h 50m', date: 'Mon, 22 Sep', increment: 10, plusDay: 1, alternates: [] },
+  { id: 'l2-16', airline: 'Singapore Airlines', dep: '11:15am', arr: '11:25am', depCode: 'LHR', arrCode: 'NRT', duration: '17h 10m', stops: '1 Stop', stopCode: 'HKG', stopDuration: '3h 50m', date: 'Mon, 22 Sep', increment: 135, plusDay: 1, alternates: [] },
+  { id: 'l2-17', airline: 'Emirates', dep: '2:15pm', arr: '1:25pm', depCode: 'LHR', arrCode: 'NRT', duration: '16h 10m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 20m', date: 'Mon, 22 Sep', increment: 40, plusDay: 1, alternates: [] }
+];
+
+const leg3Flights = [
+  { id: 'l3-0', airline: 'Malaysia Airlines', dep: '10:15am', arr: '11:25pm', depCode: 'NRT', arrCode: 'MEL', duration: '15h 10m', stops: '1 Stop', stopCode: 'KUL', stopDuration: '2h 40m', date: 'Mon, 29 Sep', increment: 0, plusDay: 0, alternates: [] },
+  { id: 'l3-1', airline: 'Vietnam Airlines', dep: '9:30am', arr: '11:45pm', depCode: 'HND', arrCode: 'MEL', duration: '16h 15m', stops: '1 Stop', stopCode: 'SGN', stopDuration: '3h 15m', date: 'Mon, 29 Sep', increment: 30, plusDay: 0, alternates: [] },
+  { id: 'l3-2', airline: 'Thai Airways', dep: '11:20am', arr: '2:35am', depCode: 'HND', arrCode: 'MEL', duration: '17h 15m', stops: '1 Stop', stopCode: 'BKK', stopDuration: '3h 00m', date: 'Mon, 29 Sep', increment: 55, plusDay: 1, alternates: [] },
+  { id: 'l3-3', airline: 'Singapore Airlines', dep: '6:30pm', arr: '9:15am', depCode: 'NRT', arrCode: 'MEL', duration: '16h 45m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 15m', date: 'Mon, 29 Sep', increment: 80, plusDay: 1,
+    alternates: [
+      { dep: '10:00am', arr: '12:45am', duration: '16h 45m', stopDuration: '3h 20m', plusDay: 1 }
+    ]},
+  { id: 'l3-4', airline: 'Cathay Pacific', dep: '3:45pm', arr: '5:40am', depCode: 'HND', arrCode: 'MEL', duration: '15h 55m', stops: '1 Stop', stopCode: 'HKG', stopDuration: '2h 30m', date: 'Mon, 29 Sep', increment: 95, plusDay: 1,
+    alternates: [
+      { dep: '9:15am', arr: '11:10pm', duration: '15h 55m', stopDuration: '2h 35m', plusDay: 0 }
+    ]},
+  { id: 'l3-5', airline: 'China Southern', dep: '8:50am', arr: '1:05am', depCode: 'NRT', arrCode: 'MEL', duration: '18h 15m', stops: '1 Stop', stopCode: 'CAN', stopDuration: '4h 00m', date: 'Mon, 29 Sep', increment: 120, plusDay: 1, alternates: [] },
+  { id: 'l3-6', airline: 'Korean Air', dep: '5:30pm', arr: '8:15am', depCode: 'NRT', arrCode: 'MEL', duration: '16h 45m', stops: '1 Stop', stopCode: 'ICN', stopDuration: '3h 10m', date: 'Mon, 29 Sep', increment: 145, plusDay: 1, alternates: [] },
+  { id: 'l3-7', airline: 'Qatar Airways', dep: '9:45pm', arr: '5:50pm', depCode: 'NRT', arrCode: 'MEL', duration: '22h 05m', stops: '1 Stop', stopCode: 'DOH', stopDuration: '3h 20m', date: 'Mon, 29 Sep', increment: 170, plusDay: 1,
+    alternates: [
+      { dep: '11:30am', arr: '7:35am', duration: '22h 05m', stopDuration: '3h 15m', plusDay: 1 }
+    ]},
+  { id: 'l3-8', airline: 'Japan Airlines', dep: '11:45am', arr: '4:30am', depCode: 'NRT', arrCode: 'MEL', duration: '18h 45m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 25m', date: 'Mon, 29 Sep', increment: 195, plusDay: 1, alternates: [] },
+  { id: 'l3-9', airline: 'Qantas', dep: '8:00pm', arr: '11:50am', depCode: 'NRT', arrCode: 'MEL', duration: '17h 50m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 35m', date: 'Mon, 29 Sep', increment: 225, plusDay: 1, alternates: [] },
+  { id: 'l3-10', airline: 'Singapore Airlines', dep: '11:30am', arr: '2:15am', depCode: 'HND', arrCode: 'MEL', duration: '16h 45m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 20m', date: 'Mon, 29 Sep', increment: 45, plusDay: 1, alternates: [] },
+  { id: 'l3-11', airline: 'Malaysia Airlines', dep: '3:20pm', arr: '4:30am', depCode: 'NRT', arrCode: 'MEL', duration: '15h 10m', stops: '1 Stop', stopCode: 'KUL', stopDuration: '2h 45m', date: 'Mon, 29 Sep', increment: 65, plusDay: 1, alternates: [] },
+  { id: 'l3-12', airline: 'Emirates', dep: '7:15pm', arr: '6:40pm', depCode: 'NRT', arrCode: 'MEL', duration: '23h 25m', stops: '1 Stop', stopCode: 'DXB', stopDuration: '3h 40m', date: 'Mon, 29 Sep', increment: 110, plusDay: 1, alternates: [] },
+  { id: 'l3-13', airline: 'Singapore Airlines', dep: '8:45am', arr: '3:50am', depCode: 'NRT', arrCode: 'MEL', duration: '19h 05m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '5h 35m', date: 'Mon, 29 Sep', increment: 155, plusDay: 1, alternates: [] },
+  { id: 'l3-14', airline: 'Vietnam Airlines', dep: '7:15am', arr: '8:00am', depCode: 'NRT', arrCode: 'MEL', duration: '22h 45m', stops: '2 Stops', stopCode: 'SGN', stopDuration: '3h 15m', stopCode2: 'SIN', stopDuration2: '2h 40m', date: 'Mon, 29 Sep', increment: 5, plusDay: 1, alternates: [] },
+  { id: 'l3-15', airline: 'China Southern', dep: '8:30am', arr: '11:45am', depCode: 'NRT', arrCode: 'MEL', duration: '24h 15m', stops: '2 Stops', stopCode: 'CAN', stopDuration: '4h 00m', stopCode2: 'KUL', stopDuration2: '3h 15m', date: 'Mon, 29 Sep', increment: 10, plusDay: 1, alternates: [] },
+  { id: 'l3-16', airline: 'Malaysia Airlines', dep: '10:15am', arr: '1:00am', depCode: 'NRT', arrCode: 'MEL', duration: '16h 45m', stops: '1 Stop', stopCode: 'SIN', stopDuration: '3h 25m', date: 'Mon, 29 Sep', increment: 58, plusDay: 1, alternates: [] },
+  { id: 'l3-17', airline: 'Singapore Airlines', dep: '6:30pm', arr: '10:50am', depCode: 'NRT', arrCode: 'MEL', duration: '18h 20m', stops: '1 Stop', stopCode: 'BKK', stopDuration: '4h 20m', date: 'Mon, 29 Sep', increment: 85, plusDay: 1, alternates: [] }
+];
+
+// ── Baggage weights ──
+const leg1Baggage = ['30kg','30kg','30kg','23kg','23kg','23kg','23kg','30kg','23kg','15kg','23kg','15kg','23kg','23kg','30kg','23kg','23kg','23kg','23kg','23kg','30kg'];
+leg1Flights.forEach((f, i) => f.baggage = leg1Baggage[i]);
+
+const leg2Baggage = ['30kg','30kg','15kg','35kg','23kg','23kg','23kg','23kg','15kg','23kg','23kg','30kg','23kg','23kg','23kg','23kg','23kg','30kg'];
+leg2Flights.forEach((f, i) => f.baggage = leg2Baggage[i]);
+
+const leg3Baggage = ['23kg','15kg','23kg','23kg','23kg','15kg','23kg','30kg','23kg','30kg','30kg','23kg','30kg','23kg','23kg','23kg','23kg','23kg'];
+leg3Flights.forEach((f, i) => f.baggage = leg3Baggage[i]);
+
+// ── Sort by price/increment (lowest first) ──
+leg1Flights.sort((a, b) => a.price - b.price);
+leg2Flights.sort((a, b) => a.increment - b.increment);
+leg3Flights.sort((a, b) => a.increment - b.increment);
+
+// ── Combined triplets ──
+function generateCombinedTriplets() {
+  const triplets = [];
+  const pairings = [
+    [0, 0, 0],     // CZ 2-stop + Qatar + Malaysia = $2,020
+    [0, 2, 2],     // CZ 2-stop + CZ 2-stop + CZ 2-stop = $2,040
+    [1, 1, 1],     // VN 2-stop + MH 2-stop + VN 2-stop = $2,060
+    [2, 0, 0],     // Vietnam + Qatar + Malaysia = $2,200
+    [2, 3, 0],     // Vietnam + SIA(SIN,11:15am) + MH(KUL) = $2,225
+    [3, 0, 0],     // China Southern + Qatar + Malaysia = $2,250
+    [2, 6, 3],     // Vietnam + Vietnam + Vietnam = $2,275
+    [5, 0, 0],     // Malaysia + Qatar + Malaysia = $2,280
+    [4, 3, 0],     // SIA(BKK) + SIA(SIN,11:15am) + MH(KUL) = $2,285 ← DECOY (wrong leg1 stopover)
+    [2, 11, 0],    // Vietnam + SIA(HND,3:45pm) + Malaysia = $2,305
+    [6, 0, 0],     // Sri Lankan + Qatar + Malaysia = $2,310
+    [7, 0, 0],     // SIA(SIN) + Qatar + Malaysia = $2,320
+    [3, 4, 5],     // China Southern + Emirates + Thai = $2,340
+    [7, 3, 0],     // SIA(SIN) + SIA(SIN,11:15am) + MH(KUL) = $2,345 ← TARGET
+    [8, 0, 0],     // Thai + Qatar + Malaysia = $2,350
+    [9, 0, 0],     // Korean + Qatar + Malaysia = $2,390
+    [3, 10, 5],    // China Southern + Etihad + Thai = $2,395
+    [7, 3, 6],     // SIA(SIN) + SIA(SIN,11:15am) + MH(SIN) = $2,403 ← DECOY (wrong leg3 stopover)
+    [10, 0, 0],    // Qatar + Qatar + Malaysia = $2,410
+    [5, 7, 8],     // Malaysia + SIA(HND,9:30pm) + SIA = $2,415
+    [8, 9, 0],     // Thai + Thai + Malaysia = $2,425
+    [11, 0, 0],    // SIA + Qatar + Malaysia = $2,450
+    [7, 14, 0],    // SIA(SIN) + SIA(HKG,11:15am) + MH(KUL) = $2,455 ← DECOY (wrong leg2 stopover)
+    [11, 3, 8],    // SIA + SIA(SIN,11:15am) + SIA = $2,555
+    [13, 0, 5],    // Qatar + Qatar + Thai = $2,575
+    [16, 0, 0],    // Cathay + Qatar + Malaysia = $2,590
+    [12, 11, 7],   // Malaysia + SIA(HND,3:45pm) + Malaysia = $2,650
+    [17, 0, 3],    // Emirates + Qatar + Vietnam = $2,710
+    [18, 4, 0],    // Etihad + Emirates + Malaysia = $2,815
+    [19, 0, 0]     // Qantas + Qatar + Malaysia = $2,980
+  ];
+  pairings.forEach(([l1i, l2i, l3i]) => {
+    const l1 = leg1Flights[l1i];
+    const l2 = leg2Flights[l2i];
+    const l3 = leg3Flights[l3i];
+    triplets.push({ leg1: l1, leg2: l2, leg3: l3, totalPrice: l1.price + l2.increment + l3.increment });
+  });
+  triplets.sort((a, b) => a.totalPrice - b.totalPrice);
+  return triplets;
+}
+const combinedTriplets = generateCombinedTriplets();
+
+// ── State ──
+let selectedLeg1 = null;
+let selectedLeg2 = null;
+let selectedLeg3 = null;
+
+// ── Helpers ──
+function airlineIconHTML(airline) {
+  const color = AIRLINE_COLORS[airline] || '#878787';
+  const initials = airline.split(' ').map(w => w[0]).join('').slice(0, 2);
+  return `<div class="airline-icon-text" style="background:${color}">${initials}</div>`;
+}
+
+function formatPrice(n) { return '$' + n.toLocaleString(); }
+
+function flightSegmentHTML(flight, opts = {}) {
+  const showLabel = opts.label || '';
+  const labelHTML = showLabel ? `<div class="segment-label">${showLabel}</div>` : '';
+  let stopsHTML;
+  if (flight.stops === 'Direct') {
+    stopsHTML = `<div class="stops-row"><div class="stop-pill">Direct</div></div>`;
+  } else if (flight.stopCode2) {
+    stopsHTML = `<div class="stops-row">
+        <div class="stop-pill">${flight.stops}</div>
+        <span class="stop-code-tip">${flight.stopCode} · ${flight.stopCode2}<span class="tooltip">${CITY_NAMES[flight.stopCode]}: ${flight.stopDuration}<br>${CITY_NAMES[flight.stopCode2]}: ${flight.stopDuration2}</span></span>
+      </div>`;
+  } else {
+    stopsHTML = `<div class="stops-row">
+        <div class="stop-pill">${flight.stops}</div>
+        <span class="stop-code-tip">${flight.stopCode}<span class="tooltip">${CITY_NAMES[flight.stopCode]}: ${flight.stopDuration} layover</span></span>
+      </div>`;
+  }
+  return `
+    <div class="flight-segment">
+      ${labelHTML}
+      <div class="airline-row">
+        ${airlineIconHTML(flight.airline)}
+        <span class="airline-name">${flight.airline}</span>
+        <div class="baggage-info">${BAGGAGE_SVG}<span class="baggage-weight">${flight.baggage || ''}</span></div>
+      </div>
+      <div class="flight-date">${flight.date}</div>
+      <div class="time-row">
+        <div class="time-details">
+          <span class="time-value">${flight.dep}</span>
+          <span class="airport-code">(${flight.depCode})<span class="tooltip">${AIRPORT_NAMES[flight.depCode]}</span></span>
+          <span class="time-dash">&ndash;</span>
+          <span class="time-value">${flight.arr}</span>${flight.plusDay ? `<span class="plus-day">+${flight.plusDay}</span>` : ''}
+          <span class="airport-code">(${flight.arrCode})<span class="tooltip">${AIRPORT_NAMES[flight.arrCode]}</span></span>
+        </div>
+        <span class="duration">${flight.duration}</span>
+      </div>
+      ${stopsHTML}
+    </div>`;
+}
+
+function cardFooterHTML(priceText, subtitle) {
+  return `
+    <div class="card-footer">
+      <div class="price-wrapper">
+        <div class="price-value">${priceText}</div>
+        <div class="price-subtitle">${subtitle}</div>
+      </div>
+      <button class="btn-view-details">Select</button>
+    </div>`;
+}
+
+// ── Render ──
+function renderCombined() {
+  const container = document.getElementById('results');
+
+  if (!selectedLeg1 && !selectedLeg2 && !selectedLeg3) {
+    let html = `<div class="fade-in">`;
+    html += `<div class="page-title">Select flights</div>`;
+    html += `<div class="cards-container">`;
+    combinedTriplets.forEach((triplet, i) => {
+      html += `<div class="flight-card" onclick="selectCombined(${i})">`;
+      html += flightSegmentHTML(triplet.leg1, { label: 'Melbourne to London' });
+      html += flightSegmentHTML(triplet.leg2, { label: 'London to Tokyo' });
+      html += flightSegmentHTML(triplet.leg3, { label: 'Tokyo to Melbourne' });
+      html += cardFooterHTML(formatPrice(triplet.totalPrice), 'Per adult');
+      html += `</div>`;
+    });
+    html += `</div></div>`;
+    container.innerHTML = html;
+  } else {
+    const total = selectedLeg1.price + (selectedLeg2.increment || 0) + (selectedLeg3.increment || 0);
+    container.innerHTML = renderTaskComplete(selectedLeg1, selectedLeg2, selectedLeg3, total);
+  }
+}
+
+function renderTaskComplete(l1, l2, l3, total) {
+  return `
+    <div class="task-complete fade-in">
+      <button class="btn-back" onclick="startOver()">&larr; Back</button>
+      <div class="complete-heading">Flights selected</div>
+      <div class="complete-card">
+        <div class="complete-segment">
+          <div class="complete-label">Melbourne to London</div>
+          <div class="complete-airline">${airlineIconHTML(l1.airline)}${l1.airline}</div>
+          <div class="complete-route">${l1.dep} (${l1.depCode}) &ndash; ${l1.arr}${l1.plusDay ? `<span class="plus-day">+${l1.plusDay}</span>` : ''} (${l1.arrCode})</div>
+          <div class="complete-meta">${l1.date} &middot; ${l1.duration} &middot; ${l1.stops} &middot; ${l1.baggage}</div>
+        </div>
+        <div class="complete-segment">
+          <div class="complete-label">London to Tokyo</div>
+          <div class="complete-airline">${airlineIconHTML(l2.airline)}${l2.airline}</div>
+          <div class="complete-route">${l2.dep} (${l2.depCode}) &ndash; ${l2.arr}${l2.plusDay ? `<span class="plus-day">+${l2.plusDay}</span>` : ''} (${l2.arrCode})</div>
+          <div class="complete-meta">${l2.date} &middot; ${l2.duration} &middot; ${l2.stops} &middot; ${l2.baggage}</div>
+        </div>
+        <div class="complete-segment">
+          <div class="complete-label">Tokyo to Melbourne</div>
+          <div class="complete-airline">${airlineIconHTML(l3.airline)}${l3.airline}</div>
+          <div class="complete-route">${l3.dep} (${l3.depCode}) &ndash; ${l3.arr}${l3.plusDay ? `<span class="plus-day">+${l3.plusDay}</span>` : ''} (${l3.arrCode})</div>
+          <div class="complete-meta">${l3.date} &middot; ${l3.duration} &middot; ${l3.stops} &middot; ${l3.baggage}</div>
+        </div>
+      </div>
+      <div class="complete-price-bar">
+        <div>
+          <span class="complete-total-label">Total per adult</span>
+          <div class="complete-total-price">${formatPrice(total)}</div>
+        </div>
+        <button class="btn-book" onclick="bookNow()">Book now</button>
+      </div>
+      <div style="text-align:center;margin-top:12px">
+        <button class="btn-link" onclick="startOver()">Clear selection</button>
+      </div>
+    </div>`;
+}
+
+// ── Actions ──
+function startSearch() {
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  renderCombined();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectCombined(index) {
+  const triplet = combinedTriplets[index];
+  selectedLeg1 = { ...triplet.leg1 };
+  selectedLeg2 = { ...triplet.leg2 };
+  selectedLeg3 = { ...triplet.leg3 };
+  renderCombined();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function bookNow() {
+  const btn = document.querySelector('.btn-book');
+  btn.classList.add('btn-book-done');
+  btn.innerHTML = '&#10003;&ensp;Task completed';
+  btn.onclick = null;
+}
+
+function startOver() {
+  selectedLeg1 = null;
+  selectedLeg2 = null;
+  selectedLeg3 = null;
+  renderCombined();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
